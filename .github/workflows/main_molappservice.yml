@@ -1,6 +1,5 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - MOLAppService
 
 on:
@@ -14,26 +13,47 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: read #This is required for actions/checkout
-
+    
     steps:
       - uses: actions/checkout@v4
-
+      
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
           node-version: '22.x'
-
+      
       - name: npm install, build, and test
         run: |
           npm install
           npm run build --if-present
           npm run test --if-present
       
+      - name: Add web.config to build folder
+        run: |
+          echo '<?xml version="1.0" encoding="utf-8"?>' > build/web.config
+          echo '<configuration>' >> build/web.config
+          echo '  <system.webServer>' >> build/web.config
+          echo '    <rewrite>' >> build/web.config
+          echo '      <rules>' >> build/web.config
+          echo '        <rule name="React Routes" stopProcessing="true">' >> build/web.config
+          echo '          <match url=".*" />' >> build/web.config
+          echo '          <conditions logicalGrouping="MatchAll">' >> build/web.config
+          echo '            <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />' >> build/web.config
+          echo '            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />' >> build/web.config
+          echo '          </conditions>' >> build/web.config
+          echo '          <action type="Rewrite" url="/" />' >> build/web.config
+          echo '        </rule>' >> build/web.config
+          echo '      </rules>' >> build/web.config
+          echo '    </rewrite>' >> build/web.config
+          echo '  </system.webServer>' >> build/web.config
+          echo '</configuration>' >> build/web.config
+        shell: cmd
+      
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: build
 
   deploy:
     runs-on: ubuntu-latest
@@ -41,7 +61,7 @@ jobs:
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
-
+    
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
@@ -54,7 +74,7 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_6C01205FF6FB4778AA5C972FDBF46AE3 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_2BC5264EAA9341C4A4F0B4C7CF4219A6 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_DA48F6BDEAC04D82971F09881683D301 }}
-
+      
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
@@ -62,4 +82,3 @@ jobs:
           app-name: 'MOLAppService'
           slot-name: 'Production'
           package: .
-          
