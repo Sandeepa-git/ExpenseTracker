@@ -30,23 +30,26 @@ jobs:
       
       - name: Add web.config to build folder
         run: |
-          echo '<?xml version="1.0" encoding="utf-8"?>' > build/web.config
-          echo '<configuration>' >> build/web.config
-          echo '  <system.webServer>' >> build/web.config
-          echo '    <rewrite>' >> build/web.config
-          echo '      <rules>' >> build/web.config
-          echo '        <rule name="React Routes" stopProcessing="true">' >> build/web.config
-          echo '          <match url=".*" />' >> build/web.config
-          echo '          <conditions logicalGrouping="MatchAll">' >> build/web.config
-          echo '            <add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" />' >> build/web.config
-          echo '            <add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" />' >> build/web.config
-          echo '          </conditions>' >> build/web.config
-          echo '          <action type="Rewrite" url="/" />' >> build/web.config
-          echo '        </rule>' >> build/web.config
-          echo '      </rules>' >> build/web.config
-          echo '    </rewrite>' >> build/web.config
-          echo '  </system.webServer>' >> build/web.config
-          echo '</configuration>' >> build/web.config
+          @echo off
+          (
+            echo ^<?xml version="1.0" encoding="utf-8"?^>
+            echo ^<configuration^>
+            echo   ^<system.webServer^>
+            echo     ^<rewrite^>
+            echo       ^<rules^>
+            echo         ^<rule name="React Routes" stopProcessing="true"^>
+            echo           ^<match url=".*" /^>
+            echo           ^<conditions logicalGrouping="MatchAll"^>
+            echo             ^<add input="{REQUEST_FILENAME}" matchType="IsFile" negate="true" /^>
+            echo             ^<add input="{REQUEST_FILENAME}" matchType="IsDirectory" negate="true" /^>
+            echo           ^</conditions^>
+            echo           ^<action type="Rewrite" url="/" /^>
+            echo         ^</rule^>
+            echo       ^</rules^>
+            echo     ^</rewrite^>
+            echo   ^</system.webServer^>
+            echo ^</configuration^>
+          ) > build\web.config
         shell: cmd
       
       - name: Upload artifact for deployment job
